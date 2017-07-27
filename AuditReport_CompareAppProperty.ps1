@@ -56,7 +56,7 @@ $AppSettings | Invoke-Parallel {
         $currApp | Add-Member -MemberType NoteProperty -Name DifferentProperties -Value $DiffProps
         $currapp | select BrowserName, DifferentProperties
     }
-} -ImportVariables 
+} -ImportVariables | Tee-Object -Variable AppChanges
 
 
 If ($AppChanges) {
