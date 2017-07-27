@@ -1,3 +1,8 @@
+### Credit: RamblingCookieMonster
+### Module: PSExcel
+### https://github.com/RamblingCookieMonster/PSExcel
+
+
 ## define Manifest Output File
 Write-Verbose "Mounting Sharepoint (SP:\)" -Verbose
 New-PSDrive -Name SP -PSProvider FileSystem -Root "\\SharepointServer\DavWWWRoot\SitePath" -Description "SharePoint"
