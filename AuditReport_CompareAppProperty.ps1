@@ -75,7 +75,7 @@ If ($AppChanges) {
     <br>
 "@
 
-    $AppChanges | %{
+    $AppChanges | %{ 
         $MailMessage =  $MailMessage + "$($_.BrowserName)"
 
         $msgText = ($_.DifferentProperties| Out-String)

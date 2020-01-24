@@ -22,14 +22,14 @@ $currDate = Get-Date -Format "MM-dd-yyyy"
 
 ## build a collection of the individual applications
 $appData = Get-XAApplication | Get-XAApplicationReport | 
-    % {
+    ForEach-Object {
         Write-Verbose "Getting details for $($_.BrowserName)" -Verbose
-        $WorkGroupServers = @(If ($_.WorkerGroupNames) { Get-XAWorkerGroupServer -WorkerGroupName $_.WorkerGroupNames -ErrorAction SilentlyContinue | Sort ServerName | select -ExpandProperty ServerName } )
+        $WorkGroupServers = @(If ($_.WorkerGroupNames) { Get-XAWorkerGroupServer -WorkerGroupName $_.WorkerGroupNames -ErrorAction SilentlyContinue | Sort-Object ServerName | Select-Object -ExpandProperty ServerName } )
         $allServers = @($_.Servernames) + $WorkGroupServers
         [PSCustomObject] @{
             'FolderPath' = $_.folderPath;
             'Application' = $_.BrowserName;
-            'ProvisionGroups' = @($_.Accounts | Where AccountdisplayName -ne "DOMAIN\ExcludedAccountName") -join ', ' -replace 'DOMAIN\\','';
+            'ProvisionGroups' = @($_.Accounts | Where-Object AccountdisplayName -ne "DOMAIN\ExcludedAccountName") -join ', ' -replace 'DOMAIN\\','';
             'UserAccounts' = $_.Accounts -join ', '
             'AllServers' = $allServers -join ', ' ;
             'ServerAssignment' = $_.ServerNames -join ', '
@@ -39,15 +39,15 @@ $appData = Get-XAApplication | Get-XAApplicationReport |
             'AppSettings' = $_
          }
     } |
-    Sort FolderPath,Application
+    Sort-Object FolderPath,Application
 
 ## Filter only the "provisioned" apps
 ## select the fields and order for the list
 ## Write date to Excel Document (worksheet: CTXData)
 Write-Verbose "Writing data to $ManifestPath" -Verbose
 $appData | 
-    Select FolderPath, Application, ProvisionGroups, AllServers, Workgroup, ServerNames, Enabled |
-    sort folderpath,Application | 
+    Select-Object FolderPath, Application, ProvisionGroups, AllServers, Workgroup, ServerNames, Enabled |
+    Sort-Object folderpath,Application | 
     Export-XLSX -Path $ManifestPath -WorksheetName CTXData -AutoFit -ClearSheet
 
 ## Create a Powershell object (variable) from the the written Excel document
@@ -69,7 +69,7 @@ Write-Verbose "Updating Enabled Data" -Verbose
 ##   Formatting:  Set False Values to font color RED
 $excel | Get-Worksheet -Name CTXData | Format-Cell -StartColumn 7 -StartRow 2 -BackgroundColor White -Bold:$false -Autofit
 $DisabledApps = Search-CellValue -Excel $excel -FilterScript { $_ -like 'FALSE' }
-$DisabledApps | Where Column -EQ 7 | % { $excel | Get-Worksheet -name $_.WorkSheetName | 
+$DisabledApps | Where-Object Column -EQ 7 | ForEach-Object { $excel | Get-Worksheet -name $_.WorkSheetName | 
             Format-Cell -StartRow $_.Row -EndRow $_.row -StartColumn $_.Column -EndColumn $_.Column -Color Red -Verbose}
 
 ## write data back to Excel file
